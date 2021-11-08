@@ -31,7 +31,7 @@ def download_page(token, page, bookid):
             os.makedirs(f'{path}/{name}/{page}')
         number=list.get('number')
         file=open(f'{path}/{name}/{page}/index.html', 'a+', encoding='utf-8')
-        file.write(f'\n<a style="color:red; font-size:25px;">Zadanie {number}</a>\n'+list.get('solution'))
+        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a>\n'+list.get('solution'))
         file.close
         
 def download_book(bookid):
