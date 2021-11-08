@@ -10,6 +10,8 @@ Skrypt uruchamia się komendą ```python BetterOdrabiamyDownloader.py```
 
 Skrypt zapyta się o E-mail i hasło do konta na Odrabiamy.pl, oraz ID książki które można znaleźć w linku. Przykładowe ID jest podane na załączonym poniżej obrazku
 
+![demo](essa.png)
+
 # Inspiracja
 
 https://github.com/konrad11901/OdrabiamyDownloader
