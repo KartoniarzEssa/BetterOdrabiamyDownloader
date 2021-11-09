@@ -33,7 +33,7 @@ def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists=json.loads(rget).get('data')
 
-    name=str(lists[0].get('book').get('name')).replace('/','')
+    name=lists[0].get('book').get('name').replace('/','')
     upload(data=json.dumps(lists))
     if not os.path.exists(f'{path}/{name}'):
         os.makedirs(f'{path}/{name}')
@@ -43,14 +43,14 @@ def download_page(token, page, bookid):
         if not os.path.exists(f'{path}/{name}/{page}'):
             os.makedirs(f'{path}/{name}/{page}')
         number=list.get('number')
-        file=open(f'{path}/{name}/{page}/index.html', 'w', encoding='utf-8')
+        file=open(f'{path}/{name}/{page}/index.html', 'a+', encoding='utf-8')
         file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a>\n'+list.get('solution'))
         file.close
         
 def download_book(bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
     pages = json.loads(rget).get('pages')
-    name = str(json.loads(rget).get('name')).replace('/','')
+    name = json.loads(rget).get('name').replace('/','')
     for page in pages:
         if not os.path.exists(f'{path}/{name}/{page}'):
             seconds=random.randint(2,8)
