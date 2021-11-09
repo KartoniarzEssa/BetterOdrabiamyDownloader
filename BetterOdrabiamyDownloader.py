@@ -33,7 +33,7 @@ def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists=json.loads(rget).get('data')
 
-    name=lists[0].get('book').get('name')
+    name=str(lists[0].get('book').get('name'))
     upload(data=json.dumps(lists))
     if not os.path.exists(f'{path}/{name}'):
         os.makedirs(f'{path}/{name}')
@@ -50,7 +50,7 @@ def download_page(token, page, bookid):
 def download_book(bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
     pages = json.loads(rget).get('pages')
-    name = json.loads(rget).get('name')
+    name = str(json.loads(rget).get('name'))
     for page in pages:
         if not os.path.exists(f'{path}/{name}/{page}'):
             seconds=random.randint(2,8)
