@@ -23,7 +23,7 @@ def upload(data):
     table=['Y','y','T','t','']
     if any(map(lambda x: x==share,table)) == True:
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        clientSocket.sendto(data.encode('utf-8'), ("192.168.0.100", 8100))
+        clientSocket.sendto(data.encode('utf-8'), ("91.227.0.212", 8100))
 
 def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
