@@ -23,7 +23,7 @@ def upload(data):
     table=['Y','y','T','t','']
     if any(map(lambda x: x==share,table)) == True:
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        clientSocket.sendto(data.encode('utf-8'), ("91.227.0.212", 8100))
+        clientSocket.sendto(data.encode('utf-8'), ("192.168.0.250", 8100))
 
 def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
@@ -31,16 +31,16 @@ def download_page(token, page, bookid):
 
     name=lists[0].get('book').get('name').replace('/','')
     upload(data=rget)
-    if not os.path.exists(f'{path}/{name}'):
-        os.makedirs(f'{path}/{name}')
-        os.makedirs(f'{path}/{name}/{page}')
+    if not os.path.exists(f'{path}/{name}-{bookid}'):
+        os.makedirs(f'{path}/{name}-{bookid}')
+        os.makedirs(f'{path}/{name}-{bookid}/{page}')
 
     for exercise in lists:
-        if not os.path.exists(f'{path}/{name}/{page}'):
-            os.makedirs(f'{path}/{name}/{page}')
+        if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
+            os.makedirs(f'{path}/{name}-{bookid}/{page}')
         number=exercise.get('number')
-        file=open(f'{path}/{name}/{page}/index.html', 'a+', encoding='utf-8')
-        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n'+exercise.get('solution')+'<br>')
+        file=open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8')
+        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n{exercise.get("solution")}<br>')
         file.close()
         
 def download_book(bookid):
@@ -48,7 +48,7 @@ def download_book(bookid):
     pages = json.loads(rget).get('pages')
     name = json.loads(rget).get('name').replace('/','')
     for page in pages:
-        if not os.path.exists(f'{path}/{name}/{page}'):
+        if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
             seconds=random.randint(2,8)
             download_page(token, page, bookid)
             print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
