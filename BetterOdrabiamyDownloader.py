@@ -6,7 +6,6 @@ import os.path
 import getpass
 import random
 import time
-import socket
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 path = os.path.dirname(os.path.abspath(filename))
@@ -22,8 +21,7 @@ token = json.loads(rpost).get('data').get('token')
 def upload(data):
     table=['Y','y','T','t','']
     if any(map(lambda x: x==share,table)) == True:
-        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        clientSocket.sendto(data.encode('utf-8'), ("91.227.0.212", 8100))
+        requests.post(url=("http://91.227.0.212:8100"), data=(data.encode('utf-8')))
 
 def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
