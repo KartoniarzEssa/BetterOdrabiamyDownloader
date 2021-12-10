@@ -15,8 +15,12 @@ password=getpass.getpass(prompt='Podaj hasło: ')
 bookid=input('Podaj ID cionszki: ')
 share=str(input('Wysyłać strony do twórcy skryptu? [T/n]: '))
 
-rpost = requests.post(url=('https://odrabiamy.pl/api/v2/sessions'), json=({"login": f"{user}", "password": f"{password}"})).content
-token = json.loads(rpost).get('data').get('token')
+try:
+    rpost = requests.post(url=('https://odrabiamy.pl/api/v2/sessions'), json=({"login": f"{user}", "password": f"{password}"})).content
+    token = json.loads(rpost).get('data').get('token')
+except:
+    print('Niepoprawny e-mail lub hasło. A może nie masz premium?')
+    exit()
 
 def upload(data):
     table=['Y','y','T','t','']
@@ -45,16 +49,16 @@ def download_page(token, page, bookid):
         file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n{exercise.get("solution")}<br>')
         file.close()
         
-def download_book(bookid):
-    rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
-    pages = json.loads(rget).get('pages')
-    name = json.loads(rget).get('name').replace('/','')
-    for page in pages:
-        if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
-            seconds=random.randint(2,8)
-            download_page(token, page, bookid)
-            print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
-            time.sleep(seconds)
-    print('Pobrano książkę!')
-
-download_book(bookid=bookid)
+rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
+if rget == '{"'+f'error":"Couldn\'t find Book with \'id\'={bookid}'+'"}':
+    print('Złe ID książki!')
+    exit()
+pages = json.loads(rget).get('pages')
+name = json.loads(rget).get('name').replace('/','')
+for page in pages:
+    if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
+        seconds=random.randint(2,8)
+        download_page(token, page, bookid)
+        print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
+        time.sleep(seconds)
+print('Pobrano książkę!')
