@@ -25,17 +25,14 @@ except:
 def upload(data):
     table=['Y','y','T','t','']
     if any(map(lambda x: x==share,table)) == True:
-        try:
-            requests.post(url=("http://91.227.0.212:8100"), data=(data.encode('utf-8')))
-        except:
-            print('Nie udało się połączyć. Kontynuuję pobieranie bez wysyłania.')
+        requests.post(url=("http://192.168.0.250:8100"), data=(data.encode('utf-8')))
             
 def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists=json.loads(rget).get('data')
 
     name=lists[0].get('book').get('name').replace('/','')
-    upload(data=rget)
+    #upload(data=rget)
 
     if not os.path.exists(f'{path}/{name}-{bookid}'):
         os.makedirs(f'{path}/{name}-{bookid}')
