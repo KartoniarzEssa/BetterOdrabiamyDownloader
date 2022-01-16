@@ -65,7 +65,8 @@ else:
         print('Niepoprawny e-mail lub hasło. A może nie masz premium?')
         exit()
     
-bookid=input('Podaj ID cionszki: ')
+bookid = click.prompt('Podaj ID cionszki', type=int)
+start_page = click.prompt('Strona od której chcesz zacząć pobierać\n(Enter = od początku)', type=int, default=0, show_default=False)
 
 if save == True:
     credentials = {"user":f"{user}", "password":f"{password}"}
@@ -74,7 +75,7 @@ if save == True:
     file.close()
         
 rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
-if rget == '{"error":"can\'t find record with friendly id: \\"'+bookid+'\\""}':
+if json.loads(rget).get('name') == None:
     print('Złe ID książki!')
     exit()
 
@@ -82,8 +83,12 @@ pages = json.loads(rget).get('pages')
 name = json.loads(rget).get('name').replace('/','')
 for page in pages:
     if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
-        seconds = random.randint(2,8)
-        download_page(token, page, bookid)
-        print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
-        time.sleep(seconds)
-print('Pobrano książkę!')
+        if start_page <= page:
+            seconds = random.randint(2,8)
+            download_page(token, page, bookid)
+            print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
+            time.sleep(seconds)
+if pages[-1] >= start_page:
+    print('Pobrano książkę!')
+else:
+    print('Podana liczba wykracza poza ilość stron w tej książce!')
