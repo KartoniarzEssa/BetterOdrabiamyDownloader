@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import click
 import requests
 import json
@@ -7,26 +8,50 @@ import getpass
 import random
 import time
 
+print('Starymisiada Software ©\nhttps://github.com/KartoniarzEssa/BetterOdrabiamyDownloader\n')
+
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 path = os.path.dirname(os.path.abspath(filename))
 save = False
 
 def download_page(token, page, bookid):
+    print(f'Pobieranie strony {page}...')
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists = json.loads(rget).get('data')
-
     name = lists[0].get('book').get('name').replace('/','')
 
     if not os.path.exists(f'{path}/{name}-{bookid}'):
         os.makedirs(f'{path}/{name}-{bookid}')
         os.makedirs(f'{path}/{name}-{bookid}/{page}')
+        os.makedirs(f'{path}/{name}-{bookid}/{page}/data')
 
     for exercise in lists:
+        solution = exercise.get("solution")
+        soup = BeautifulSoup(solution, 'html.parser')
+        number = exercise.get('number')
+        svg_num = 0
+        
+        for obj in soup.find_all('object', class_='small', type='image/svg+xml'):
+            obj.extract()
+
         if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
             os.makedirs(f'{path}/{name}-{bookid}/{page}')
-        number = exercise.get('number')
+            os.makedirs(f'{path}/{name}-{bookid}/{page}/data')
+        
+        for svg in soup.find_all(attrs={'type' : 'image/svg+xml'}):
+            try:
+                data = svg['data']
+                r = requests.get(data)
+                soup.find('object', data=data)['data'] = f'./data/{number}-{svg_num}.svg'
+                with open(f'{path}/{name}-{bookid}/{page}/data/{number}-{svg_num}.svg','wb') as f:
+                    svg_num += 1
+                    f.write(r.content)
+                    f.close()
+            except:
+                pass
+
         file = open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8')
-        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n{exercise.get("solution")}<br>')
+        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n{soup}<br>')
         file.close()
 
 def get_token(user, password):
@@ -86,7 +111,7 @@ for page in pages:
         if start_page <= page:
             seconds = random.randint(2,8)
             download_page(token, page, bookid)
-            print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za {seconds} sekund')
+            print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za około {seconds} sekund')
             time.sleep(seconds)
 if pages[-1] >= start_page:
     print('Pobrano książkę!')
