@@ -30,8 +30,12 @@ def download_page(token, page, bookid):
         soup = BeautifulSoup(solution, 'html.parser')
         number = exercise.get('number')
         svg_num = 0
+        img_num = 0
         
         for obj in soup.find_all('object', class_='small', type='image/svg+xml'):
+            obj.extract()
+            
+        for obj in soup.find_all('object', class_='math small', type='image/svg+xml'):
             obj.extract()
 
         if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
@@ -45,6 +49,18 @@ def download_page(token, page, bookid):
                 soup.find('object', data=data)['data'] = f'./data/{number}-{svg_num}.svg'
                 with open(f'{path}/{name}-{bookid}/{page}/data/{number}-{svg_num}.svg','wb') as f:
                     svg_num += 1
+                    f.write(r.content)
+                    f.close()
+            except:
+                pass
+            
+        for img in soup.find_all('img'):
+            data = img['src']
+            try:
+                r = requests.get(data)
+                soup.find('img', src=data)['src'] = f'./data/{number}-{img_num}.jpg'
+                with open(f'{path}/{name}-{bookid}/{page}/data/{number}-{img_num}.jpg','wb') as f:
+                    img_num += 1
                     f.write(r.content)
                     f.close()
             except:
@@ -64,6 +80,7 @@ def get_token(user, password):
 
 if os.path.exists(f'{path}/credentials'):
     file = open(f'{path}/credentials', 'r')
+
     try:
         load = json.load(file)
         user = load.get('user')
@@ -72,6 +89,7 @@ if os.path.exists(f'{path}/credentials'):
         token = get_token(user, password)
     except:
         token = False
+
     if token == False:
         print('Nie udało się pobrać danych logowania z pliku. Wpisz je ręcznie!')
         user = input('Podaj E-Mail: ')
