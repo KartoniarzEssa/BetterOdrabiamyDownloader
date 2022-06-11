@@ -4,7 +4,7 @@ Skrypt w pythonie do pobierania książek z POLSKIEJ strony Odrabiamy.pl
 # Użycie
 **WYMAGANE KONTO PREMIUM NA ODRABIAMY.PL ORAZ PYTHON<=3.0**
 
-Prawdopodobnie nie działa na koncie premium z Facebooka
+**Prawdopodobnie nie działa na koncie premium z Facebooka**
 
 Wymagane zależności można pobrać komendą ```pip install -r requirements.txt```
 
