@@ -1,12 +1,5 @@
+import click, requests, json, inspect, os.path, getpass
 from bs4 import BeautifulSoup
-import click
-import requests
-import json
-import inspect
-import os.path
-import getpass
-import random
-import time
 
 print('Starymisiada Software ©\nhttps://github.com/KartoniarzEssa/BetterOdrabiamyDownloader\n')
 
@@ -19,16 +12,16 @@ def download_page(token, page, bookid):
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists = json.loads(rget).get('data')
     name = lists[0].get('book').get('name').replace('/','')
+    name = name.replace('-','')
 
     if not os.path.exists(f'{path}/{name}-{bookid}'):
-        os.makedirs(f'{path}/{name}-{bookid}')
-        os.makedirs(f'{path}/{name}-{bookid}/{page}')
         os.makedirs(f'{path}/{name}-{bookid}/{page}/data')
 
     for exercise in lists:
         solution = exercise.get("solution")
         soup = BeautifulSoup(solution, 'html.parser')
-        number = exercise.get('number')
+        exc_id = exercise.get('id')
+        exc_num = exercise.get('number')
         svg_num = 0
         img_num = 0
         
@@ -39,15 +32,14 @@ def download_page(token, page, bookid):
             obj.extract()
 
         if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
-            os.makedirs(f'{path}/{name}-{bookid}/{page}')
             os.makedirs(f'{path}/{name}-{bookid}/{page}/data')
         
         for svg in soup.find_all(attrs={'type' : 'image/svg+xml'}):
             try:
                 data = svg['data']
                 r = requests.get(data)
-                soup.find('object', data=data)['data'] = f'./data/{number}-{svg_num}.svg'
-                with open(f'{path}/{name}-{bookid}/{page}/data/{number}-{svg_num}.svg','wb') as f:
+                soup.find('object', data=data)['data'] = f'./data/{exc_id}-{svg_num}.svg'
+                with open(f'{path}/{name}-{bookid}/{page}/data/{exc_id}-{svg_num}.svg','wb') as f:
                     svg_num += 1
                     f.write(r.content)
                     f.close()
@@ -58,8 +50,8 @@ def download_page(token, page, bookid):
             data = img['src']
             try:
                 r = requests.get(data)
-                soup.find('img', src=data)['src'] = f'./data/{number}-{img_num}.jpg'
-                with open(f'{path}/{name}-{bookid}/{page}/data/{number}-{img_num}.jpg','wb') as f:
+                soup.find('img', src=data)['src'] = f'./data/{exc_id}-{img_num}.jpg'
+                with open(f'{path}/{name}-{bookid}/{page}/data/{exc_id}-{img_num}.jpg','wb') as f:
                     img_num += 1
                     f.write(r.content)
                     f.close()
@@ -67,7 +59,7 @@ def download_page(token, page, bookid):
                 pass
 
         file = open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8')
-        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {number}</a><br>\n{soup}<br>')
+        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {exc_num}</a><br>\n{soup}<br>')
         file.close()
 
 def get_token(user, password):
@@ -109,7 +101,6 @@ else:
         exit()
     
 bookid = click.prompt('Podaj ID cionszki', type=int)
-start_page = click.prompt('Strona od której chcesz zacząć pobierać\n(Enter = od początku)', type=int, default=0, show_default=False)
 
 if save == True:
     credentials = {"user":f"{user}", "password":f"{password}"}
@@ -123,15 +114,18 @@ if json.loads(rget).get('name') == None:
     exit()
 
 pages = json.loads(rget).get('pages')
+
+start_page = click.prompt('Strona od której chcesz zacząć pobierać\n(Enter = od początku)', type=int, default=pages[0], show_default=False)
+end_page = click.prompt('Strona do której chcesz pobierać\n(Enter = do końca)', type=int, default=pages[-1], show_default=False)
+
 name = json.loads(rget).get('name').replace('/','')
 for page in pages:
     if not os.path.exists(f'{path}/{name}-{bookid}/{page}'):
         if start_page <= page:
-            seconds = random.randint(2,8)
-            download_page(token, page, bookid)
-            print(f'Pobrano stronę {page}\nNastępna strona zostanie pobrana za około {seconds} sekund')
-            time.sleep(seconds)
-if pages[-1] >= start_page:
+            if end_page >= page:
+                download_page(token, page, bookid)
+                print(f'Pobrano stronę {page}')
+if pages[-1] >= end_page:
     print('Pobrano książkę!')
 else:
     print('Podana liczba wykracza poza ilość stron w tej książce!')
