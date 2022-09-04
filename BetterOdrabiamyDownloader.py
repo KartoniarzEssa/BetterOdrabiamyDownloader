@@ -9,7 +9,7 @@ save = False
 
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
-    rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-142','Authorization': f'Bearer {token}'}).content.decode('utf-8')
+    rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-143','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists = json.loads(rget).get('data')
     name = lists[0].get('book').get('name').replace('/','')
     name = name.replace('-','')
@@ -108,7 +108,7 @@ if save == True:
     json.dump(credentials, file)
     file.close()
         
-rget = requests.get(url=f'https://odrabiamy.pl/api/v1.3/ksiazki/{bookid}').content.decode('utf-8')
+rget = requests.get(url=f'https://odrabiamy.pl/api/v3/books/{bookid}').content.decode('utf-8')
 if json.loads(rget).get('name') == None:
     print('Złe ID książki!')
     exit()
