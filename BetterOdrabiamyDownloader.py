@@ -62,6 +62,12 @@ def download_page(token, page, bookid):
         file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {exc_num}</a><br>\n{soup}<br>')
         file.close()
 
+    try:
+        if len(os.listdir(f'{path}/{name}-{bookid}/{page}/data')) == 0:
+            os.rmdir(f'{path}/{name}-{bookid}/{page}/data')
+    except:
+        pass
+
 def get_token(user, password):
     try:
         rpost = requests.post(url=('https://odrabiamy.pl/api/v2/sessions'), json=({"login": f"{user}", "password": f"{password}"})).content
