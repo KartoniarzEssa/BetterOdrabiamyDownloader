@@ -9,7 +9,7 @@ save = False
 
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
-    rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-143','Authorization': f'Bearer {token}'}).content.decode('utf-8')
+    rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-144','Authorization': f'Bearer {token}'}).content.decode('utf-8')
     lists = json.loads(rget).get('data')
     name = lists[0].get('book').get('name').replace('/','')
     name = name.replace('-','')
