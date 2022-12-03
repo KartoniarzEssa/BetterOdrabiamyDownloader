@@ -10,7 +10,22 @@ save = False
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
     rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-144','Authorization': f'Bearer {token}'}).content.decode('utf-8')
-    lists = json.loads(rget).get('data')
+    rger_json_load = json.loads(rget)
+    lists = rger_json_load.get('data')
+    if lists is None: # obsługa błędu i informację o nim
+        if (rger_json_load.get('error').get('code') == "unauthorized"):
+            print("Wystąpił błąd,", "potencjalne przyczyny to: \n")
+            error_message = rger_json_load.get('error').get('message')
+            for message in error_message:
+                print("! " + message + ":")
+                if ((type(error_message.get(message)).__name__) == "str"):
+                    print("     " + error_message.get(message))
+                else:
+                    for mes in error_message.get(message):
+                        print("     " + error_message.get(message).get(mes))
+                        
+        exit()
+            
     name = lists[0].get('book').get('name').replace('/','')
     name = name.replace('-','')
 
