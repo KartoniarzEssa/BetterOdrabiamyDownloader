@@ -4,7 +4,7 @@ Skrypt w pythonie do pobierania książek z POLSKIEJ strony Odrabiamy.pl
 # Użycie
 **WYMAGANE KONTO PREMIUM NA ODRABIAMY.PL ORAZ PYTHON<=3.0**
 
-**Prawdopodobnie nie działa na koncie premium z Facebooka**
+**Prawdopodobnie nie działa na koncie premium z Facebook'a**
 
 Wymagane zależności można pobrać komendą ```pip install -r requirements.txt```
 
@@ -17,11 +17,9 @@ Skrypt zapyta się o E-mail i hasło do konta na Odrabiamy.pl, oraz ID książki
 # Limit
 Odrabiamy.pl ma limit na przeglądanie rozwiązań do zadań. Wynosi on 60 zadań na dzień i resetuje się równo o 00:00 każdego dnia.
 
-Skrypt po pobraniu ok. 45 stron scrashuje się, a na stronie Odrabiamy.pl będzie widoczny poniższy komunikat.
-
-Jeśli chcesz pobierać dalej, kliknij przycisk 'Rozumiem' i uruchom ponownie skrypt.
-
 ![demo2](images/warning.png)
+
+Skrypt automatycznie usuwa to ostrzeżenie, i pobiera strony dalej
 
 # Inspiracja
 
