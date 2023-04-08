@@ -6,25 +6,15 @@ print('Starymisiada Software ©\nhttps://github.com/KartoniarzEssa/BetterOdrabia
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 path = os.path.dirname(os.path.abspath(filename))
 save = False
+ua = 'new_user_agent-android-3.3.12-sdk_gphone_x86-26e4068038698964'
 
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
-    rget = requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent':'new_user_agent-huawei-144','Authorization': f'Bearer {token}'}).content.decode('utf-8')
-    rger_json_load = json.loads(rget)
-    lists = rger_json_load.get('data')
-    if lists is None: # obsługa błędu i informację o nim
-        if (rger_json_load.get('error').get('code') == "unauthorized"):
-            print("Wystąpił błąd,", "potencjalne przyczyny to: \n")
-            error_message = rger_json_load.get('error').get('message')
-            for message in error_message:
-                print("! " + message + ":")
-                if ((type(error_message.get(message)).__name__) == "str"):
-                    print("     " + error_message.get(message))
-                else:
-                    for mes in error_message.get(message):
-                        print("     " + error_message.get(message).get(mes))
-                        
+    rget = json.loads(requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent': ua,'Authorization': f'Bearer {token}'}).content.decode('utf-8'))
+    if not 'data' in rget:
+        print('Brak danych strony. Prawdopodobnie masz jakąś blokadę na koncie!')
         exit()
+    lists = rget['data']
             
     name = lists[0].get('book').get('name').replace('/','')
     name = name.replace('-','')
@@ -84,12 +74,27 @@ def download_page(token, page, bookid):
         pass
 
 def get_token(user, password):
-    try:
-        rpost = requests.post(url=('https://odrabiamy.pl/api/v2/sessions'), json=({"login": f"{user}", "password": f"{password}"})).content
-        token = json.loads(rpost).get('data').get('token')
-        return token
-    except:
+    rpost = requests.post(url=('https://odrabiamy.pl/api/v2/sessions'), json=({"login": f"{user}", "password": f"{password}"})).content
+    token = json.loads(rpost)
+    if not 'data' in token:
         return False
+    token = json.loads(rpost)['data']['token']
+    user_info = json.loads(requests.get(url='https://odrabiamy.pl/api/v2/users/current_user', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
+    if user == user_info['data']['name']:
+        return token
+    return False
+    
+def clear_warning(token):
+    response = json.loads(requests.get(url='https://odrabiamy.pl/api/v2/users/current_user', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
+    if response['data']['userOffences'] != []:
+        return False
+    if 'message' in response['data']['blocked']:
+        if response['data']['blocked']['message'] == 'Dziś rozwiązałeś z nami już 60 zadań, przez co osiągnięty został dzienny limit przeglądanych rozwiązań. Możliwość dalszego wyświetlania treści zostanie wznowiona o północy':
+            return False
+    confirm = json.loads(requests.post(url='https://odrabiamy.pl/api/v2/users/confirm_warning', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
+    if confirm['message'] == 'User accepted warning':
+        return True
+    return False
 
 if os.path.exists(f'{path}/credentials'):
     file = open(f'{path}/credentials', 'r')
@@ -110,7 +115,7 @@ if os.path.exists(f'{path}/credentials'):
         save = click.confirm('Zapisać dane logowania?', default=False)
         token = get_token(user, password)
         if token == False:
-            print('Niepoprawny e-mail lub hasło. A może nie masz premium?')
+            print('Niepoprawny e-mail lub hasło.')
             exit()
 else:
     user = input('Podaj E-Mail: ')
@@ -118,8 +123,13 @@ else:
     save = click.confirm('Zapisać dane logowania?', default=False)
     token = get_token(user, password)
     if token == False:
-        print('Niepoprawny e-mail lub hasło. A może nie masz premium?')
+        print('Niepoprawny e-mail lub hasło.')
         exit()
+        
+user_info = json.loads(requests.get(url='https://odrabiamy.pl/api/v2/users/current_user', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
+if user_info['data']['premiumLevel'] == None:
+    print('Nie masz premium, więc ten skrypt nie zadziała!')
+    exit()
     
 bookid = click.prompt('Podaj ID cionszki', type=int)
 
