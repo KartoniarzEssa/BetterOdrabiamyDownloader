@@ -12,8 +12,13 @@ def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
     rget = json.loads(requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent': ua,'Authorization': f'Bearer {token}'}).content.decode('utf-8'))
     if not 'data' in rget:
-        print('Brak danych strony. Prawdopodobnie masz jakąś blokadę na koncie!')
-        exit()
+        if not clear_warning(token):
+            print('Brak danych strony. Prawdopodobnie masz jakąś blokadę na koncie!')
+            exit()
+        rget = json.loads(requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent': ua,'Authorization': f'Bearer {token}'}).content.decode('utf-8'))
+        if not 'data' in rget:
+            print('Brak danych strony. Prawdopodobnie masz jakąś blokadę na koncie!')
+            exit()
     lists = rget['data']
             
     name = lists[0].get('book').get('name').replace('/','')
