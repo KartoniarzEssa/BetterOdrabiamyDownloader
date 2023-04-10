@@ -93,11 +93,14 @@ def clear_warning(token):
     response = json.loads(requests.get(url='https://odrabiamy.pl/api/v2/users/current_user', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
     if response['data']['userOffences'] != []:
         return False
+    if response['data']['blocked'] is False:
+        return True
     if 'message' in response['data']['blocked']:
         if response['data']['blocked']['message'] == 'Dziś rozwiązałeś z nami już 60 zadań, przez co osiągnięty został dzienny limit przeglądanych rozwiązań. Możliwość dalszego wyświetlania treści zostanie wznowiona o północy':
             return False
     confirm = json.loads(requests.post(url='https://odrabiamy.pl/api/v2/users/confirm_warning', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
     if confirm['message'] == 'User accepted warning':
+        print('Usunięto ostrzeżenie o limicie dziennym!')
         return True
     return False
 
@@ -106,8 +109,8 @@ if os.path.exists(f'{path}/credentials'):
 
     try:
         load = json.load(file)
-        user = load.get('user')
-        password = load.get('password')
+        user = load['user']
+        password = load['password']
         file.close()
         token = get_token(user, password)
     except:
