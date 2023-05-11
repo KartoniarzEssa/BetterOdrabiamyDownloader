@@ -1,12 +1,15 @@
 import click, requests, json, inspect, os.path, getpass
 from bs4 import BeautifulSoup
+from google_play_scraper import app
 
 print('Starymisiada Software ©\nhttps://github.com/KartoniarzEssa/BetterOdrabiamyDownloader\n')
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 path = os.path.dirname(os.path.abspath(filename))
 save = False
-ua = 'new_user_agent-android-3.3.12-sdk_gphone_x86-26e4068038698964'
+version = app('com.swmansion.dajspisac')['version']
+
+ua = f'new_user_agent-android-{version}-sdk_gphone_x86-26e4068038698964'
 
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')

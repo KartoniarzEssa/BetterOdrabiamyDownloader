@@ -1,3 +1,4 @@
 beautifulsoup4
 requests
 click
+google_play_scraper
