@@ -11,6 +11,7 @@ version = app('com.swmansion.dajspisac')['version']
 
 ua = f'new_user_agent-android-{version}-sdk_gphone_x86-26e4068038698964'
 
+
 def download_page(token, page, bookid):
     print(f'Pobieranie strony {page}...')
     rget = json.loads(requests.get(url=f'https://odrabiamy.pl/api/v2/exercises/page/premium/{page}/{bookid}', headers={'user-agent': ua,'Authorization': f'Bearer {token}'}).content.decode('utf-8'))
@@ -33,6 +34,7 @@ def download_page(token, page, bookid):
     for exercise in lists:
         solution = exercise.get("solution")
         soup = BeautifulSoup(solution, 'html.parser')
+        videos = exercise['videos']
         exc_id = exercise.get('id')
         exc_num = exercise.get('number')
         svg_num = 0
@@ -60,8 +62,8 @@ def download_page(token, page, bookid):
                 pass
             
         for img in soup.find_all('img'):
-            data = img['src']
             try:
+                data = img['src']
                 r = requests.get(data)
                 soup.find('img', src=data)['src'] = f'./data/{exc_id}-{img_num}.jpg'
                 with open(f'{path}/{name}-{bookid}/{page}/data/{exc_id}-{img_num}.jpg','wb') as f:
@@ -70,9 +72,70 @@ def download_page(token, page, bookid):
                     f.close()
             except:
                 pass
+            
+        for expr in soup.find_all('math-expr'):
+            if not '\\\\displaystyle' in expr:
+                expr['expr'] = expr['expr'].replace('strike(', 'cancel(').replace('strike', 'cancel')
+            
+        with open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8') as file:
+            zadanie = ''
+            video = ''
+            if str(exc_num).isnumeric():
+                zadanie = 'Zadanie '
+            file.write(f'<a style="color:red; font-size:25px;">{zadanie}{exc_num}</a><br>\n{soup}<br>')
+            if videos:
+                for video in videos:
+                    file.write(f'<p>https://www.youtube.com/watch?v={video["contentId"]}</p><br>\n<iframe src=https://www.youtube.com/embed/{video["contentId"]} height="400" width="600"></iframe>')
+            file.close()
+    
+    with open(f'{path}/{name}-{bookid}/{page}/index.html', 'r+', encoding='utf-8') as file:
+        content = file.read()
+        file.seek(0, 0)
+        file.write("""<!DOCTYPE html>
+<head>
+<meta charset='UTF-8'>
+<style>
+    @font-face{font-family:KaTeX_Main fallback;size-adjust:95%;src:local("Times New Roman"),local("LiberationSerif")}@font-face{font-family:KaTeX_Main fallback;size-adjust:83%;src:local("Noto Serif")}:root{--odr-text-decoration-color:currentColor;--odr-math-text-font-family:KaTeX_Main,"KaTeX_Main fallback",serif}.odr-strikethrough{text-decoration-color:var(--odr-text-decoration-color)}.odr-downdiagonalstrike,.odr-updiagonalstrike{-webkit-text-size-adjust:100%;text-size-adjust:100%;display:inline-block;position:relative;white-space:nowrap}.odr-downdiagonalstrike:not(.odr-strikethrough),.odr-updiagonalstrike:not(.odr-strikethrough){text-decoration:none}.odr-downdiagonalstrike:after,.odr-updiagonalstrike:before{bottom:0;content:"";left:0;position:absolute;right:0;top:0}.odr-updiagonalstrike:before{background:linear-gradient(to right bottom,transparent calc(50% - 1px),var(--odr-text-decoration-color) 49.5%,var(--odr-text-decoration-color) 50.5%,transparent calc(50% + 1px))}.odr-downdiagonalstrike:after{background:linear-gradient(to right top,transparent calc(50% - 1px),var(--odr-text-decoration-color) 49.5%,var(--odr-text-decoration-color) 50.5%,transparent calc(50% + 1px))}.odr-updiagonalstrike:before.odr-downdiagonalstrike:after{background:linear-gradient(to right bottom,transparent calc(50% - 1px),var(--odr-text-decoration-color) 49.5%,var(--odr-text-decoration-color) 50.5%,transparent calc(50% + 1px)),linear-gradient(to right top,transparent calc(50% - 1px),var(--odr-text-decoration-color) 49.5%,var(--odr-text-decoration-color) 50.5%,transparent calc(50% + 1px))}.odr-comment,.odr-footnote{font-size:.8333357142857143em}math-expr{font-size:1.15rem}.katex{font-family:var(--odr-math-text-font-family)}.katex-display>.katex{white-space:normal}.katex-html>.base{padding-bottom:.25em;padding-top:.25em} 
+</style>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.js"></script>
+<script src="https://unpkg.com/asciimath2tex@1.2.1/dist/asciimath2tex.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/mhchem.min.js"></script>
+<script>
+  window.WebFontConfig = {
+    custom: {
+      families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+        'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+        'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+        'KaTeX_Size4', 'KaTeX_Typewriter'],
+    },
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js"></script>
+<script>
+        const parser = new AsciiMathParser();
+        document.addEventListener("DOMContentLoaded", function () {
+            const mathExprs = document.querySelectorAll('math-expr');
+    
+            mathExprs.forEach(function (element) {
+                var expr = element.getAttribute('expr');
+                const span = document.createElement('span');
 
-        file = open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8')
-        file.write(f'<head><meta charset="UTF-8"></head>\n<a style="color:red; font-size:25px;">Zadanie {exc_num}</a><br>\n{soup}<br>')
+                if (!expr.includes("\\\\displaystyle")) {
+                    var expr = parser.parse(expr);
+                }
+
+                katex.render(expr, span, {
+                    throwOnError: false,
+                });
+                
+                element.appendChild(span);
+            });
+        });
+</script>
+</head>
+""")
+        file.write(content)
         file.close()
 
     try:
@@ -103,7 +166,11 @@ def clear_warning(token):
             return False
     confirm = json.loads(requests.post(url='https://odrabiamy.pl/api/v2/users/confirm_warning', headers={'user-agent': ua, 'authorization': f'bearer {token}'}).content.decode('utf-8'))
     if confirm['message'] == 'User accepted warning':
-        print('Usunięto ostrzeżenie o limicie dziennym!')
+        print("""\n
+              ========================================
+              Usunięto ostrzeżenie o limicie dziennym!
+              ========================================
+              \n""")
         return True
     return False
 
