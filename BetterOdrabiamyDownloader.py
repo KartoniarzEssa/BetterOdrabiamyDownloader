@@ -1,4 +1,4 @@
-import click, requests, json, inspect, os.path, getpass
+import click, requests, json, inspect, os.path, getpass, re
 from bs4 import BeautifulSoup
 from google_play_scraper import app
 
@@ -76,10 +76,11 @@ def download_page(token, page, bookid):
         for expr in soup.find_all('math-expr'):
             if not '\\\\displaystyle' in expr:
                 expr['expr'] = expr['expr'].replace('strike(', 'cancel(').replace('strike', 'cancel')
+                pattern = r'ul\((?!.*\))'
+                expr['expr'] = re.sub(pattern, 'ul', expr['expr'])
             
-        with open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+', encoding='utf-8') as file:
+        with open(f'{path}/{name}-{bookid}/{page}/index.html', 'a+') as file:
             zadanie = ''
-            video = ''
             if str(exc_num).isnumeric():
                 zadanie = 'Zadanie '
             file.write(f'<a style="color:red; font-size:25px;">{zadanie}{exc_num}</a><br>\n{soup}<br>')
@@ -88,7 +89,7 @@ def download_page(token, page, bookid):
                     file.write(f'<p>https://www.youtube.com/watch?v={video["contentId"]}</p><br>\n<iframe src=https://www.youtube.com/embed/{video["contentId"]} height="400" width="600"></iframe>')
             file.close()
     
-    with open(f'{path}/{name}-{bookid}/{page}/index.html', 'r+', encoding='utf-8') as file:
+    with open(f'{path}/{name}-{bookid}/{page}/index.html', 'r+') as file:
         content = file.read()
         file.seek(0, 0)
         file.write("""<!DOCTYPE html>
@@ -134,8 +135,7 @@ def download_page(token, page, bookid):
         });
 </script>
 </head>
-""")
-        file.write(content)
+"""+content)
         file.close()
 
     try:
